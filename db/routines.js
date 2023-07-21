@@ -1,6 +1,41 @@
 const client = require("./client");
 
-async function createRoutine({ creatorId, isPublic, name, goal }) {}
+async function createRoutine({ creatorId, isPublic, name, goal }) {
+  try {
+    console.log("creating routines...");
+    const { rows } = await client.query(`
+    SELECT creatorID, 
+    isPublic, 
+    description, 
+    name,
+    FROM activities;
+    `);
+
+    return rows;
+  } catch (error) {
+    console.log("Error creating routines");
+    
+  }
+  // select and return an array of all activities
+}
+
+async function getActivityById(id) {
+  try {
+    console.log("Getting activity by ID...");
+    const { rows } =
+    await client.query(`
+    SELECT id, 
+    FROM activities WHERE id = ${id};
+
+
+    `)
+    return rows;
+  } catch (error) {
+    console.log("Error getting Activities by Id");
+    throw error;
+  }
+}
+}
 
 async function getRoutineById(id) {}
 

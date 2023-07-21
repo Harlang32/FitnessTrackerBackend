@@ -26,6 +26,7 @@ async function createTables() {
   console.log("Starting to build tables...")
   // create all tables, in the correct order
   try {
+    console.log("Creating tables...");
  await client.query(`
   CREATE TABLE users (
   id SERIAL PRIMARY KEY,
@@ -53,7 +54,7 @@ await client.query(`
   `);
 
   await client.query(`
-  
+
   `)
 } catch (error) {
   throw error;

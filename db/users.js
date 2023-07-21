@@ -24,7 +24,6 @@ async function createUser({ username, password }) {
     }
   }
 
-
 async function getUser({ username, password }) {
   try {
   const { rows } = await client.query(`SELECT id, ${username}, ${password} FROM USERS;`)
@@ -55,19 +54,21 @@ return user;
 async function getUserByUsername(userName) {
   try {
     console.log("Getting user by Username");
-const { rows: [user] } = await client.query(`SELECT id, username FROM users WHERE username =${username};`);
+const { rows: [user] } = await client.query(`SELECT id, username FROM users WHERE username =${userName}`);
 
 
 if (!user) {
   return null;
 }
-return rows;
+return user;
   } catch (error){
     console.log("Error getting user by username...")
     throw error;
   }
 
 }
+
+
 
 module.exports = {
   createUser,
