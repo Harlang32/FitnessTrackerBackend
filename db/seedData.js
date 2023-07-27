@@ -34,6 +34,7 @@ async function createTables() {
   password varchar(255) NOT NULL
   );
     `);
+  
     
 await client.query(`
     CREATE TABLE activities (
@@ -49,14 +50,12 @@ await client.query(`
     "creatorId"	INTEGER	REFERENCES users(id);
     "isPublic"	BOOLEAN	DEFAULT false,
     name VARCHAR(255)	UNIQUE NOT NULL,
-    goal TEXT	NOT NULL
+    goal TEXT	NOT NULL);`
     );
-  `);
-
-  await client.query(`
-
-  `)
-} catch (error) {
+    
+  
+    } catch (error) {
+  console.log("Error creating tables.");
   throw error;
 }
 }
