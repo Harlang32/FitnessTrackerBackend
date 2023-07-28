@@ -2,6 +2,15 @@
 // const { } = require('./');
 const client = require("./client")
 
+const {
+  createUser,
+  createActivity,
+  createRoutine,
+  getRoutinesWithoutActivities,
+  getAllActivities,
+  addActivityToRoutine,
+} = require("../db");
+
 async function dropTables() {
   console.log("DROP TABLES SECTION");
   // drop all tables, in the correct order
@@ -52,6 +61,16 @@ await client.query(`
     name VARCHAR(255)	UNIQUE NOT NULL,
     goal TEXT	NOT NULL);`
     );
+
+    await client.query(`
+      CREATE TABLE "routine-activities" (
+      id SERIAL PRIMARY KEY,
+      "routineId" INTEGER REFERENCES routines(Id),
+      "activityId" INTEGER REFERENCES activities(Id),
+      duration INTEGER,
+      count INTEGER
+      );
+    `);
     
   
     } catch (error) {
@@ -59,21 +78,6 @@ await client.query(`
   throw error;
 }
 }
-//From juicebox DB
-// async function rebuildDB() {
-//   try {
-//     client.connect();
-
-//     await dropTables();
-//     await createTables();
-//     await createInitialUsers();
-
-//   } catch (error) {
-//     console.log("Error during rebuildDB");
-//     throw error;
-//   }
-// }
-
 
 /* 
 
@@ -88,7 +92,7 @@ async function createInitialUsers() {
       { username: "albert", password: "bertie99" },
       { username: "sandra", password: "sandra123" },
       { username: "glamgal", password: "glamgal123" },
-    ]
+    ];
     const users = await Promise.all(usersToCreate.map(createUser))
 
     console.log("Users created:")
@@ -111,7 +115,7 @@ async function createInitialActivities() {
       {
         name: "Incline Dumbbell Hammer Curl",
         description:
-          "Lie down face up on an incline bench and lift thee barbells slowly upward toward chest",
+          "Lie down face up on an incline bench and lift the barbells slowly upward toward chest",
       },
       {
         name: "bench press",

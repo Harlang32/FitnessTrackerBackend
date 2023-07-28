@@ -22,24 +22,27 @@ async function createRoutine({ creatorId, isPublic, name, goal }) {
 async function getRoutineById(id) {
 try {
   
-  const { rows } =
+  const { rows: [routine] } =
 await client.query(`
 SELECT id,
-FROM routines WHERE id = ${id};
-  `)
-  return rows;
+FROM routines WHERE id = $1;
+  `, 
+  [id]
+  );
+  return routine;
 } catch (error){
 console.log("Error getting Routines by Id");
-
+throw error;
   }
 }
 
 async function getRoutinesWithoutActivities() {
   try {
- const { rows } =
-await client.query(`
+ const { rows } = await client.query(`
+
 SELECT *,
 FROM routines;
+
   `);
   return rows;
 } catch (error){
@@ -50,9 +53,10 @@ console.log("Error getting all Routines.");
 
 async function getAllRoutines() {
   try {
- const { rows } =
-await client.query(`
-SELECT *,
+ const { rows } = await client.query(`
+SELECT routines.*, users.username AS "creatorName"
+      FROM routines
+      JOIN users ON routines."creatorId" = users.id;
 FROM routines;
   `);
   return rows;
@@ -105,23 +109,23 @@ WHERE username = ${username};
 }
 // Not Finished yet...
 //***************************************** */
-async function getPublicRoutinesByActivity({ id }) {
-  try {
-    let getPublicRoutinesByActivity = await getAllPublicRoutines();
+// async function getPublicRoutinesByActivity({ id }) {
+//   try {
+//     let getPublicRoutinesByActivity = await getAllPublicRoutines();
 
-    const { 
-      rows: [ routines ],
-    } = await client.query(`
-    SELECT activities.id, routines.id,
-    FROM activities
-    JOIN routines ON activities.id=routines.id;
-    `)
-    return [routines];
-  } catch (error) {
-    console.log("Error getting public routines by activity.")
-    throw(error);
-  }
-}
+//     const { 
+//       rows: [ routines ],
+//     } = await client.query(`
+//     SELECT activities.id, routines.id,
+//     FROM activities
+//     JOIN routines ON activities.id=routines.id;
+//     `)
+//     return [routines];
+//   } catch (error) {
+//     console.log("Error getting public routines by activity.")
+//     throw(error);
+//   }
+// }
 //********************************************* */
 async function updateRoutine({ id, ...fields }) {
   const setString = Object.keys(fields)
@@ -166,7 +170,7 @@ module.exports = {
   getAllPublicRoutines,
   getAllRoutinesByUser,
   getPublicRoutinesByUser,
-  getPublicRoutinesByActivity,
+  // getPublicRoutinesByActivity,
   createRoutine,
   updateRoutine,
   destroyRoutine,
