@@ -16,9 +16,8 @@ async function dropTables() {
   // drop all tables, in the correct order
   try {
     console.log("Starting to drop tables...");
-
     await client.query(`
-      DROP TABLE IF EXISTS routine-activities;
+      DROP TABLE IF EXISTS "routine-activities";
       DROP TABLE IF EXISTS routines;
       DROP TABLE IF EXISTS activities;
       DROP TABLE IF EXISTS users;      
@@ -32,35 +31,35 @@ async function dropTables() {
 }
 
 async function createTables() {
-  console.log("Starting to build tables...")
-  // create all tables, in the correct order
   try {
-    console.log("Creating tables...");
- await client.query(`
-  CREATE TABLE users (
-  id SERIAL PRIMARY KEY,
-  username varchar(255) UNIQUE NOT NULL,
-  password varchar(255) NOT NULL
-  );
-    `);
-  
-    
-await client.query(`
-    CREATE TABLE activities (
-    id SERIAL PRIMARY KEY,
-    name varchar(255)	UNIQUE NOT NULL,
-    description	TEXT	NOT NULL
+    console.log("Starting to build tables...");
+
+    // create all tables, in the correct order
+    await client.query(`
+      CREATE TABLE users (
+      id SERIAL PRIMARY KEY,
+      username varchar(255) UNIQUE NOT NULL,
+      password varchar(255) NOT NULL
       );
     `);
 
-  await client.query(`
-    CREATE TABLE routines (
-    id	SERIAL	PRIMARY KEY,
-    "creatorId"	INTEGER	REFERENCES users(id);
-    "isPublic"	BOOLEAN	DEFAULT false,
-    name VARCHAR(255)	UNIQUE NOT NULL,
-    goal TEXT	NOT NULL);`
-    );
+    await client.query(`
+      CREATE TABLE activities (
+      id SERIAL PRIMARY KEY,
+      name varchar(255) UNIQUE NOT NULL,
+      description TEXT NOT NULL
+      );
+    `);
+
+    await client.query(`
+      CREATE TABLE routines (
+      id SERIAL PRIMARY KEY,
+      "creatorId" INTEGER REFERENCES users(Id),
+      "isPublic" BOOLEAN DEFAULT false,
+      name varchar(255) UNIQUE NOT NULL,
+      goal TEXT NOT NULL
+      );
+    `);
 
     await client.query(`
       CREATE TABLE "routine-activities" (
@@ -71,12 +70,11 @@ await client.query(`
       count INTEGER
       );
     `);
-    
-  
-    } catch (error) {
-  console.log("Error creating tables.");
-  throw error;
-}
+    console.log("Finished creating tables");
+  } catch (error) {
+    console.log("Error creating tables!");
+    throw error;
+  }
 }
 
 /* 

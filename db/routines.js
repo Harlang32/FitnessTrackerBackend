@@ -2,12 +2,11 @@ const client = require("./client");
 
 async function createRoutine({ creatorId, isPublic, name, goal }) {
   try {
-    console.log("creating routines...");
+    console.log(`${creatorId} ${isPublic} ${name} ${goal}`);
     const { 
       rows: [routine], } = await client.query(`
-    INSERT INTO routines("creatorId", "isPublic", "name", "goal" )
+    INSERT INTO routines("creatorId", "isPublic", name, goal )
     VALUES($1, $2, $3, $4)
-    ON CONFLICT (name) DO NOTHING
     RETURNING *;
 
     `,
@@ -16,7 +15,7 @@ async function createRoutine({ creatorId, isPublic, name, goal }) {
     return routine;
   } catch (error) {
     console.log("Error creating routines");
-    
+    throw error;
   }
 }
 async function getRoutineById(id) {
@@ -35,19 +34,27 @@ console.log("Error getting Routines by Id");
 throw error;
   }
 }
-
+/* Come back and fix later...
+******************************************************************************** */
 async function getRoutinesWithoutActivities() {
   try {
- const { rows } = await client.query(`
+    console.log("Inside getRoutinesWithoutActivities()");
+ const { rows: [routines] } = await client.query(`
 
-SELECT *,
+SELECT *
 FROM routines;
 
   `);
-  return rows;
-} catch (error){
-console.log("Error getting all Routines.");
 
+  if (!routines) {
+    console.log("No Routines found - Inside getRoutinesWithoutActivities.");
+    return null;
+  }
+  
+  return routines;
+} catch (error){
+console.log("Error getting Routines without Activities.");
+throw error;
   }
 }
 
