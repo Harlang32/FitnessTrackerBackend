@@ -1,18 +1,19 @@
 const client = require("./client");
 
+
 // database functions
 async function createActivity({ name, description }) {
   try {
-    console.log("Creating activity.");
+    // console.log("Inside createActivity.");
     const {
       rows: [activity],
     } = await client.query(
       `
-    INSERT INTO activities(name, description)
-    VALUES ($1, $2)
-    ON CONFLICT (name) DO NOTHING
-    RETURNING *;
-    `,
+        INSERT INTO activities(name, description) 
+        VALUES($1, $2) 
+        ON CONFLICT (name) DO NOTHING 
+        RETURNING *;
+      `,
       [name, description]
     );
 
@@ -20,89 +21,117 @@ async function createActivity({ name, description }) {
   } catch (error) {
     console.log("Error creating Activity.");
     throw error;
-    // return the new activity
   }
 }
 
+// Get All Activities function
 async function getAllActivities() {
   try {
-    console.log("Getting all activities...");
-    const { rows } = await client.query(`
-    SELECT id, name, description
-    FROM activities;
-    `);
-    
-  console.log("All activities retreived");
-    return rows;
+    console.log("Inside getAllActivities.");
+
+    const { rows: activities } = await client.query(`
+        SELECT * FROM activities;
+      `);
+
+    return activities;
   } catch (error) {
     console.log("Error creating Activity.");
-    
-  }
-  // select and return an array of all activities
-}
-
-async function getActivityById(id) {
-  try {
-    console.log("Getting activity by ID...");
-    const { rows } =
-    await client.query(`
-    SELECT id, 
-    FROM activities WHERE id = ${id};
-
-
-    `)
-    return rows;
-  } catch (error) {
-    console.log("Error getting Activities by Id");
     throw error;
   }
 }
 
+// Get Activity By Id function
+async function getActivityById(id) {
+  try {
+    console.log("Inside getActivityById.");
+    const {
+      rows: [activity],
+    } = await client.query(
+      `
+        SELECT id, name, description
+        FROM activities
+        WHERE id=${id}
+      `
+    );
+
+    if (!activity) {
+      console.log("No activity found - Inside getActivityById.");
+      return null;
+    }
+
+    return activity;
+  } catch (error) {
+    console.log("Error getting Activity By Id.");
+    throw error;
+  }
+}
+
+// Get Activity By Name function
 async function getActivityByName(name) {
   try {
-    console.log("Getting activities by name...")
-    const {rows} = await client.query(`
-    SELECT name, 
-    FROM activities WHERE name = ${name};
-    `)
-    return rows;
+    console.log("Inside getActivityByName.");
+    const {
+      rows: [activity],
+    } = await client.query(
+      `
+        SELECT id, name, description
+        FROM activities
+        WHERE name=${name}
+      `
+    );
+
+    if (!activity) {
+      console.log("No activity found - Inside getActivityByName.");
+      return null;
+    }
+
+    return activity;
   } catch (error) {
-    console.log("Error getting activities by name...")
+    console.log("Error getting Activity By Name.");
+    throw error;
   }
 }
 
 // used as a helper inside db/routines.js
-async function attachActivitiesToRoutines(routines) {
-  
-}
+async function attachActivitiesToRoutines(routines) {}
 
+// Update Activity function
 async function updateActivity({ id, ...fields }) {
   // don't try to update the id
-  // do update the name and description
-  // return the updated activity
-  const setString = Object.keys(fields).map((
-    key, index) => `"${ key }"=$${ index + 1}`
-  ).join(',');
+  // build the set string
+  const setString = Object.keys(fields)
+    .map((key, index) => `"${key}"=$${index + 1}`)
+    .join(", ");
 
-try {
+  console.log("Inside updateActivity, String set to: ", setString);
 
-  if (setString.length > 0) {
-    await client.query(`
-    UPDATE activities;
-    SET ${ setString }
-    WHERE id=${id}
-    RETURNING *;
-    `, Object.values(fields));
+  // return early if this is called without fields
+  if (setString.length === 0) {
+    return;
   }
-  
-    return await getActivityById(id)
-   } catch (error) {
-     console.log("Error updating activity...");
+
+  // do update the name and description
+  try {
+    console.log("Inside updateActivity.");
+    const {
+      rows: [activity],
+    } = await client.query(
+      `
+        UPDATE activities
+        SET ${setString}
+        WHERE id=${id}
+        RETURNING *;
+      `,
+      Object.values(fields)
+    );
+
+    // return the updated activity
+    return activity;
+  } catch (error) {
+    console.log("Error updating Activity.");
     throw error;
- 
   }
 }
-
 
 module.exports = {
   getAllActivities,

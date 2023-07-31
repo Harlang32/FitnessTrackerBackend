@@ -7,6 +7,7 @@ const morgan = require('morgan')
 app.use(cors());
 
 app.use(morgan("dev"));
+app.use(express.json());
 
 // const router = require('router');
 

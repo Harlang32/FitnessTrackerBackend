@@ -5,7 +5,7 @@ const bcrypt = require("bcrypt")
 // database functions
 
 // user functions
-async function createUser({ username, password }) {
+async function createUser({ userName, password }) {
   
   const SALT_COUNT = 10;
 
@@ -13,15 +13,15 @@ async function createUser({ username, password }) {
 
     try {
       console.log("creating users...")
-      console.log(username, password, hashedPassword)
+      console.log(userName, password, hashedPassword)
       const {rows: [user]} = await client.query(
         `
-      INSERT INTO users(username, password)
+      INSERT INTO users(userName, password)
       VALUES ($1, $2)
-      ON CONFLICT (username) DO NOTHING
+      ON CONFLICT (userName) DO NOTHING
       RETURNING *;
     `,
-        [username, hashedPassword]
+        [userName, hashedPassword]
       );
       delete user.password;
       return user;
@@ -97,4 +97,5 @@ module.exports = {
   getUser,
   getUserById,
   getUserByUsername,
+  hashedPassword
 }
