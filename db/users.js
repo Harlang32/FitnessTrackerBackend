@@ -1,101 +1,102 @@
 /* eslint-disable */
 const client = require("./client");
-const bcrypt = require("bcrypt") 
+const bcrypt = require("bcrypt");
 
 // database functions
 
 // user functions
-async function createUser({ userName, password }) {
-  
-  const SALT_COUNT = 10;
+async function createUser({ username, password }) {
+  // const SALT_COUNT = 10;
 
-  const hashedPassword = await bcrypt.hash(password, SALT_COUNT);
+  // const hashedPassword = await bcrypt.hash(password, SALT_COUNT);
 
-    try {
-      console.log("creating users...")
-      console.log(userName, password, hashedPassword)
-      const {rows: [user]} = await client.query(
-        `
-      INSERT INTO users(userName, password)
+  try {
+    console.log("creating users...");
+    console.log(username, password); //hashedPassword//
+    const {
+      rows: [user],
+    } = await client.query(
+      `
+      INSERT INTO users(username, password)
       VALUES ($1, $2)
-      ON CONFLICT (userName) DO NOTHING
+      ON CONFLICT (username) DO NOTHING
       RETURNING *;
     `,
-        [userName, hashedPassword]
-      );
-      delete user.password;
-      return user;
-    } catch (error) {
-      console.log("Error creating users...")
-      throw error;
-    }
+      [username, password]
+    );
+    delete user.password;
+    return user;
+  } catch (error) {
+    console.log("Error creating users...");
+    throw error;
   }
+}
 
 async function getUser({ username, password }) {
   try {
-  const user = await getUserByUserName(username);
-  const hashedPassword = user.password;
-  // isValid will be a boolean based on wether the password matches the hashed password
-  const isValid = await bcrypt.compare(password, hashedPassword);
+    console.log("inside getUser");
+    const { user } = await client.query(
+      `
+        SELECT * FROM users
+        WHERE username=$1
+        AND password=$2
+      `,
+      [username, password]
+    );
 
-  if(isValid) {
-    delete user.password;
-
-    return user;
+    if (user) {
+      console.log("No user found - inside getUser");
+      return username;
+    }
+  } catch (error) {
+    console.log("Error getting user");
+    throw error;
   }
-} catch (error) {
-  console.log("Error getting user");
-  throw error;
-}
 }
 async function getUserById(userId) {
   try {
-    console.log("Getting users...")
-const { rows : [user], } = await client.query(`SELECT id, username FROM users WHERE id=${userId};`);
+    console.log("Getting users...");
+    const {
+      rows: [user],
+    } = await client.query(
+      `SELECT id, username FROM users WHERE id=${userId};`
+    );
 
-
-if (!user) {
-  return null;
+    if (!user) {
+      return null;
+    }
+    return user;
+  } catch (error) {
+    console.log("Error getting user by id.");
+    throw error;
+  }
 }
-return user;
 
-} catch (error) {
-  console.log("Error getting user by id.")
-  throw error;
-}
-}
-
-async function getUserByUsername(userName) {
+async function getUserByUsername(username) {
   try {
     console.log("Getting user by Username");
 
-const { rows: [user], } = await client.query(`
+    const {
+      rows: [user],
+    } = await client.query(`
 
 SELECT id, username, password FROM users 
-WHERE username =$1;
-`,
+WHERE username =${username};
+`);
 
-[userName]);
-
-
-
-if (!user) {
-  return null;
-}
-return user;
-  } catch (error){
-    console.log("Error getting user by username...")
+    if (!user) {
+      return null;
+    }
+    return user, password;
+  } catch (error) {
+    console.log("Error getting user by username...");
     throw error;
   }
-
 }
-
-
 
 module.exports = {
   createUser,
   getUser,
   getUserById,
   getUserByUsername,
-  hashedPassword
-}
+};

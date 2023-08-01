@@ -71,16 +71,16 @@ async function getAllRoutines() {
   try {
     console.log("Inside getAllRoutines.");
 
-    const { routine } = await client.query(`
+    const { routines } = await client.query(`
         SELECT * FROM routines;
       `);
 
-    if (!routine) {
+    if (!routines) {
       console.log("No Routines found - Inside getAllRoutines.");
       return null;
     }
 
-    return routine;
+    return routines;
   } catch (error) {
     console.log("Error getting Routines.");
     throw error;

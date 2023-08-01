@@ -1,6 +1,5 @@
 const client = require("./client");
 
-
 // database functions
 async function createActivity({ name, description }) {
   try {
@@ -76,7 +75,7 @@ async function getActivityByName(name) {
       `
         SELECT id, name, description
         FROM activities
-        WHERE name=${name}
+        WHERE name=$1;
       `
     );
 
