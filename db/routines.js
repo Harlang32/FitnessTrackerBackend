@@ -32,8 +32,9 @@ async function getRoutineById(id) {
       `
         SELECT *
         FROM routines
-        WHERE id=${id}
-      `
+        WHERE id=$1;
+      `,
+      [id]
     );
 
     if (!routine) {
@@ -92,8 +93,11 @@ async function getAllPublicRoutines() {
     console.log("Inside getAllPublicRoutines.");
 
     const { routine } = await client.query(`
-        SELECT * FROM routines
-        WHERE "isPublic"=TRUE
+        SELECT routines.*, users.username AS "creatorName"
+        FROM routines
+        JOIN users
+        ON routines."creatorId"=users.id
+        WHERE "isPublic"=true;
       `);
 
     if (!routine) {
@@ -107,7 +111,7 @@ async function getAllPublicRoutines() {
     throw error;
   }
 }
-
+// ********************************* I was here last! //*
 async function getAllRoutinesByUser({ username }) {
   try {
     console.log("Inside getAllRoutinesByUser.");

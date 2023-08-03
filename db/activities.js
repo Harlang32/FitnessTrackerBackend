@@ -1,3 +1,4 @@
+
 const client = require("./client");
 
 // database functions
@@ -47,16 +48,11 @@ async function getActivityById(id) {
       rows: [activity],
     } = await client.query(
       `
-        SELECT id, name, description
+        SELECT *
         FROM activities
-        WHERE id=${id}
-      `
+        WHERE id=$1;`,
+      [id]
     );
-
-    if (!activity) {
-      console.log("No activity found - Inside getActivityById.");
-      return null;
-    }
 
     return activity;
   } catch (error) {
@@ -73,16 +69,12 @@ async function getActivityByName(name) {
       rows: [activity],
     } = await client.query(
       `
-        SELECT id, name, description
+        SELECT *
         FROM activities
         WHERE name=$1;
-      `
+      `,
+      [name]
     );
-
-    if (!activity) {
-      console.log("No activity found - Inside getActivityByName.");
-      return null;
-    }
 
     return activity;
   } catch (error) {
@@ -94,6 +86,7 @@ async function getActivityByName(name) {
 // used as a helper inside db/routines.js
 async function attachActivitiesToRoutines(routines) {}
 
+// Update Activity function
 // Update Activity function
 async function updateActivity({ id, ...fields }) {
   // don't try to update the id
