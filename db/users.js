@@ -6,9 +6,9 @@ const bcrypt = require("bcrypt");
 
 // user functions
 async function createUser({ username, password }) {
-  // const SALT_COUNT = 10;
+  const SALT_COUNT = 10;
 
-  // const hashedPassword = await bcrypt.hash(password, SALT_COUNT);
+  const hashedPassword = await bcrypt.hash(password, SALT_COUNT);
 
   try {
     console.log("creating users...");
@@ -35,36 +35,31 @@ async function createUser({ username, password }) {
 async function getUser({ username, password }) {
   try {
     console.log("inside getUser");
-    const { user } = await client.query(
-      `
-        SELECT * FROM users
-        WHERE username=$1
-        AND password=$2
-      `,
-      [username, password]
-    );
+    const { user } = await getUserByUsername(username)
+    const hashedPassword = user.password;
+    const isValid = await bcrypt.compare(password, hashedPassword);
 
-    if (user) {
-      console.log("No user found - inside getUser");
-      return username;
+    if (isValid) {
+      delete user.password;
+
+      return user;
     }
   } catch (error) {
-    console.log("Error getting user");
     throw error;
-  }
-}
+      }
+    }
+
 async function getUserById(userId) {
   try {
     console.log("Getting users...");
     const {
       rows: [user],
     } = await client.query(
-      `SELECT id, username FROM users WHERE id=${userId};`
+      `SELECT id, username FROM users WHERE id=${userId};`,
+      [userId]
     );
+    delete user.password;
 
-    if (!user) {
-      return null;
-    }
     return user;
   } catch (error) {
     console.log("Error getting user by id.");

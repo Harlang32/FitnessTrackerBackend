@@ -1,3 +1,4 @@
+const { attachActivitiesToRoutines } = require("./activities");
 const client = require("./client");
 
 async function createRoutine({ creatorId, isPublic, name, goal }) {
@@ -111,24 +112,23 @@ async function getAllPublicRoutines() {
     throw error;
   }
 }
-// ********************************* I was here last! //*
 async function getAllRoutinesByUser({ username }) {
   try {
     console.log("Inside getAllRoutinesByUser.");
 
-    const { routine } = await client.query(`
-        SELECT * FROM routines
-        WHERE username=${username}
-      `);
-
-    if (!routine) {
-      console.log(
-        "No Routines for this User found - Inside getAllRoutinesByUser."
+    const { rows: routine } = await client.query(`
+        SELECT routines.*, users.username AS "creatorName"
+         FROM routines
+         JOIN users ON routines."creatorId" = users.id
+      
+        WHERE username=$1;
+      `,
+      [username]
       );
-      return null;
-    }
 
-    return routine;
+    
+    const routinesWithActivities = await attachActivitiesToRoutines(routines);
+    return routinesWithActivities;
   } catch (error) {
     console.log("Error getting Routines by User.");
     throw error;
@@ -136,28 +136,28 @@ async function getAllRoutinesByUser({ username }) {
 }
 
 async function getPublicRoutinesByUser({ username }) {
+
+  // eslint-disable-next-line no-useless-catch
   try {
     console.log("Inside getPublicRoutinesByUser.");
 
-    const { routine } = await client.query(`
-        SELECT * FROM routines
-        WHERE username=${username}
-        AND "isPublic"=TRUE
-      `);
+    const { rows: routines } = await client.query(
+      `
+      SELECT routines.*, users.username AS "creatorName"
+      FROM routines
+      JOIN users ON routines."creatorId" = users.id
+      WHERE "isPublic"=true AND username=$1;
+      `,
+      [username]
+    );
 
-    if (!routine) {
-      console.log(
-        "No Public Routines for this User found - Inside getPublicRoutinesByUser."
-      );
-      return null;
+      const routinesWithActivities = await attachActivitiesToRoutines(routines);
+      return routinesWithActivities;
+    } catch (error) {
+      throw error;
     }
-
-    return routine;
-  } catch (error) {
-    console.log("Error getting Public Routines by User.");
-    throw error;
-  }
-}
+    }
+    
 
 async function getPublicRoutinesByActivity({ id }) {
   try {

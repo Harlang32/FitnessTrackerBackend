@@ -38,13 +38,14 @@ async function getRoutineActivityById(id) {
   try {
     console.log("Inside getRoutineActivityById.");
     const {
-      rows: [routine],
+      rows: [routineActivity],
     } = await client.query(
       `
         SELECT *
         FROM "routine-activities"
         WHERE id=${id}
-      `
+      `,
+      [id]
     );
 
     if (!routine) {
@@ -52,7 +53,7 @@ async function getRoutineActivityById(id) {
       return null;
     }
 
-    return routine;
+    return routineActivity;
   } catch (error) {
     console.log("Error getting Routine-Activity By Id.");
     throw error;
@@ -69,7 +70,8 @@ async function getRoutineActivitiesByRoutine({ id }) {
         SELECT *
         FROM "routine-activities"
         WHERE "routineId"=${id}
-      `
+      `, 
+      [id]
     );
 
     if (!routine) {
@@ -125,7 +127,7 @@ async function destroyRoutineActivity(id) {
   console.log("Inside destroyRoutineActivity.");
 
   try {
-    const { routine } = await client.query(`
+    const { routineActivity } = await client.query(`
         DELETE FROM "routine-activities"
         WHERE id=${id}
       `);
@@ -139,7 +141,27 @@ async function destroyRoutineActivity(id) {
   }
 }
 
-async function canEditRoutineActivity(routineActivityId, userId) {}
+async function canEditRoutineActivity(routineActivityId, userId) {
+  try {
+    const {
+      rows: [routineActivity],
+    } = await client.query( `
+    SELECT * 
+    FROM routines JOIN routine-activiites ON routines.id = routine-activities."routineId WHERE routine-activities.id=$1;
+    `,
+    [routineActivityId]
+    );
+
+    if (routineActivity.creatorId === userId) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    console.log("error editing routine-actiivty by id")
+   throw error;
+  }
+}
 
 module.exports = {
   getRoutineActivityById,
