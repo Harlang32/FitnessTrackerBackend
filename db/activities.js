@@ -1,4 +1,3 @@
-
 const client = require("./client");
 
 // database functions
@@ -11,7 +10,6 @@ async function createActivity({ name, description }) {
       `
         INSERT INTO activities(name, description) 
         VALUES($1, $2) 
-        ON CONFLICT (name) DO NOTHING 
         RETURNING *;
       `,
       [name, description]
@@ -84,7 +82,29 @@ async function getActivityByName(name) {
 }
 
 // used as a helper inside db/routines.js
-async function attachActivitiesToRoutines(routines) {}
+async function attachActivitiesToRoutines(routines) {
+  // eslint-disable-next-line no-useless-catch
+  try {
+    console.log("inside attachActivitiesToRoutines");
+    const { rows: routineActivities 
+    } = await client.query(`
+    SELECT activities.*, routineActivities."routineId", routineActivities."activityId", routineActivities.id AS "routineActivityId, routineActivities.duration, routineActivities.count
+    FROM activities
+    JOIN routineActivities ON activities.id = routine_activities."activityId";
+
+    `);
+
+    routines.array.forEach(routine => {
+      routine.activities = routineActivities.filter(
+        (routineActivities) => routineActivities.routineId === routine.id
+      );
+      
+    });
+    return routines;
+  } catch (error) {
+    throw error;
+  }
+}
 
 // Update Activity function
 // Update Activity function
@@ -105,6 +125,7 @@ async function updateActivity({ id, ...fields }) {
   // do update the name and description
   try {
     console.log("Inside updateActivity.");
+
     const {
       rows: [activity],
     } = await client.query(

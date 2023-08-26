@@ -1,64 +1,82 @@
 const express = require('express');
-const { getAllActivities, createActivity, getPublicRoutinesByActivity, updateActivity } = require('../db');
-const router = express.Router();
+const activitiesRouter = express.Router();
+const {
+  getAllActivities,
+  createActivity,
+  updateActivity, 
+  getActivityById,
+  getActivityByName
+} = require("../db/activities");
+
+const { getPublicRoutinesByActivity } = require("../db/routines");
 
 // GET /api/activities/:activityId/routines
 
-router.get("/:activityId/routines", async (req, res, next) => {
+activitiesRouter.get("/:activityId/routines", async (req, res, next) => {
+
+    const { activityId } = req.params
     try {
-        const userRoutines = getPublicRoutinesByActivity({
-            id: parseInt(req.params.activityId),
+        const routinesByActivity = getPublicRoutinesByActivity({
+            id: activityId
         });
 
-        res.send({ userRoutines });
-    } catch (error) {
-        next(error);
+        if (routinesByActivity.length > 0) {
+        res.send({ routinesByActivity });
+        } else {
+            res.send({
+              message: `Activity ${activityId} not found`,
+              name: "activityNotFoundError",
+              error: `Activity ${activityId} not found`,
+            });
+        }
+    } catch ({ name, message }) {
+        next({ name, message });
     }
-})
+});
 
 // GET /api/activities
 
-router.get("/api/activities", async (req, res, next) => {
-try {
-    const activities = await getAllActivities();
-    res.send(activities);
-} catch (error) {
-    next(error);
-}
+activitiesRouter.get("/api/activities", async (req, res, next) => {
+  try {
+    const allActivities = await getAllActivities();
+    res.send(allActivities);
+  } catch ({ name, message }) {
+    next({ name, message });
+  }
 });
 
 // POST /api/activities
-router.post("/api/activities", async (req, res, next) => {
-    try {
-        const newActivity = await createActivity(req.body);
-        res.send(newActivity)
-    } catch (error) {
-        next(error);
-    }
+activitiesRouter.post("/api/activities", async (req, res, next) => {
+  try {
+    const newActivity = await createActivity(req.body);
+    res.send(newActivity);
+  } catch ({ name, message }) {
+    next({ name, message })
+  }
 });
 // PATCH /api/activities/:activityId
 
-router.patch("/api/activities/:activityId", async (req, res, next) => {
-        const { name, description } = req.body;
-        const updateFields = {}
-        updateFields.id = parseInt(req.params.activityId);
+activitiesRouter.patch( "/api/activities/:activityId", async (req, res, next) => {
+    const { name, description } = req.body;
+    const updateFields = {};
+    updateFields.id = parseInt(req.params.activityId);
 
-        if (name) {
-            updateFields.name = name.toLowerCase();
-        }
-        if (description) {
-            updateFields.description = description;
+    if (name) {
+      updateFields.name = name.toLowerCase();
+    }
+    if (description) {
+      updateFields.description = description;
     }
     try {
-        const updatedItem = await updateActivity(updateFields);
+      const updatedItem = await updateActivity(updateFields);
 
-        if (updatedItem) {
-            res.send({ updatedItem });
-        }
-
-    } catch ({name, message}) {
-      next({name, message});
+      if (updatedItem) {
+        res.send({ updatedItem });
+      }
+    } catch ({ name, message }) {
+      next({ name, message });
     }
-});
+  }
+);
 
-module.exports = router;
+module.exports = activitiesRouter;
