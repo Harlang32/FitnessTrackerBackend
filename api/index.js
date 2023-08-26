@@ -10,6 +10,7 @@ router.use(async (req, res, next) => {
     const auth = req.header("Authorization");
 
     if (!auth) {
+      // nothing to see here
         next();
     } else if (auth.startsWith(prefix)) {
     // recover the token
@@ -25,16 +26,21 @@ router.use(async (req, res, next) => {
         req.user = await getUserById(id);
         next();
       }
-      const user = await getUserById(id);
+  
       // note: this might be a user or it might be null depending on if it exists
 
       // attach the user and move on
-      req.user = user;
+   
 
-      next();
-    } catch (error) {
+    } catch ({ name, message }) {
+      next({ name, message });
       // there are a few types of errors here
     }
+  } else {
+    next({ 
+      name: "AuthorizationHeaderError",
+      message: `Authorization token must start with ${prefix}`,
+     })
   }
 });
 
