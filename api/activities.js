@@ -7,6 +7,7 @@ const {
   getActivityById,
   getActivityByName
 } = require("../db/activities");
+const { requireUser} = require("./utils");
 
 const { getPublicRoutinesByActivity } = require("../db/routines");
 
@@ -46,12 +47,12 @@ activitiesRouter.get("/api/activities", async (req, res, next) => {
 });
 
 // POST /api/activities
-activitiesRouter.post("/api/activities", async (req, res, next) => {
+activitiesRouter.post("/api/activities", requireUser, async (req, res, next) => {
   try {
     const newActivity = await createActivity(req.body);
     res.send(newActivity);
-  } catch ({ name, message }) {
-    next({ name, message })
+  } catch (error) {
+    next(error)
   }
 });
 // PATCH /api/activities/:activityId
